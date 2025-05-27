@@ -1,4 +1,3 @@
-// cS.js = codeSummary.js
 const fs = require('fs');
 const path = require('path');
 
@@ -22,7 +21,7 @@ const supportedExtensions = {
 const ignoredFiles = [
     '.angular', '.vscode', 'node_modules', '.editorconfig', '.gitignore', 'Migrations', 'Debug',
     'angular.json', 'package-lock.json', 'package.json', 'README.md', 'Dependencies', 'Connected Services',
-    'tsconfig.app.json', 'tsconfig.json', 'tsconfig.spec.json', 'cS.js', 'zzzC.md', 'codeSummary.js'
+    'tsconfig.app.json', 'tsconfig.json', 'tsconfig.spec.json', 'cS.js', 'zzz.md'
 ];
 
 let processedFiles = 0;
@@ -43,6 +42,27 @@ function walkDir(dir, callback) {
             callback(filePath);
         }
     });
+}
+
+// Function to remove excessive empty lines
+function removeExcessiveEmptyLines(content) {
+    const lines = content.split('\n');
+    let newContent = '';
+    let emptyLineCount = 0;
+
+    lines.forEach(line => {
+        if (line.trim() === '') {
+            emptyLineCount++;
+            if (emptyLineCount <= 2) {
+                newContent += '\n';
+            }
+        } else {
+            emptyLineCount = 0;
+            newContent += line + '\n';
+        }
+    });
+
+    return newContent.trim(); // Remove any leading/trailing spaces
 }
 
 // Summary generator
@@ -97,16 +117,20 @@ function generateSummary(root, selectedDirs) {
             }
 
             console.log(`Processing: ${relativePath}`);
-            summary += `${relativePath}:\n\`\`\`${lang}\n${content}\n\`\`\`\n\n`;
+            
+            // Remove excessive empty lines from content
+            const cleanedContent = removeExcessiveEmptyLines(content);
+            
+            summary += `${relativePath}:\n\`\`\`${lang}\n${cleanedContent}\n\`\`\`\n\n`;
 
             processedFiles++;
             const progress = Math.round((processedFiles / totalFiles) * 100);
             process.stdout.write(`\rProgress: ${progress}%`);
 
             if (processedFiles === totalFiles) {
-                console.log(`\n💾 Writing to zzzC.md...`);
-                fs.writeFileSync(path.join(root, 'zzzC.md'), summary);
-                console.log(`✅ Done! Summary saved to zzzC.md`);
+                console.log(`\n💾 Writing to zzz.md...`);
+                fs.writeFileSync(path.join(root, 'zzz.md'), summary);
+                console.log(`✅ Done! Summary saved to zzz.md`);
             }
         });
     });
@@ -117,7 +141,3 @@ const rootDir = process.cwd();
 const selectedDirs = process.argv.slice(2);  // Command-line folders
 
 generateSummary(rootDir, selectedDirs);
-
-
-// node cd.js: for all codebase
-// node cS.js src/app/modules/dashboard: for specific folder 
