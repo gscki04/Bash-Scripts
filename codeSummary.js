@@ -129,7 +129,7 @@ function generateSummary(root, selectedDirs) {
 
             if (processedFiles === totalFiles) {
                 console.log(`\n💾 Writing to zzz.md...`);
-                fs.writeFileSync(path.join(root, 'zzz.md'), summary);
+                fs.writeFileSync(path.join(__dirname, 'zzz.md'), summary); // Save in script's folder
                 console.log(`✅ Done! Summary saved to zzz.md`);
             }
         });
@@ -141,3 +141,5 @@ const rootDir = process.cwd();
 const selectedDirs = process.argv.slice(2);  // Command-line folders
 
 generateSummary(rootDir, selectedDirs);
+
+// node .\.angular\.temp\aaf5.js .\src\app\
