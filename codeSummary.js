@@ -76,7 +76,7 @@ function generateSummary(root, selectedDirs) {
 
     // Determine target directories to scan
     const targets = selectedDirs.length > 0
-        ? selectedDirs.map(folder => path.join(root, folder)).filter(fs.existsSync)
+        ? selectedDirs.map(folder => path.resolve(folder)).filter(fs.existsSync)
         : [root];
 
     // First pass to count total files
@@ -84,8 +84,9 @@ function generateSummary(root, selectedDirs) {
         walkDir(dir, (filePath) => {
             const ext = path.extname(filePath);
             const lang = supportedExtensions[ext];
+            const relativeFilePath = path.relative(root, filePath);
 
-            if (!lang || ignoredFiles.some((ignored) => filePath.includes(ignored))) {
+            if (!lang || ignoredFiles.some((ignored) => relativeFilePath.includes(ignored))) {
                 return;
             }
 
@@ -100,14 +101,14 @@ function generateSummary(root, selectedDirs) {
         walkDir(dir, (filePath) => {
             const ext = path.extname(filePath);
             const lang = supportedExtensions[ext];
+            const relativeFilePath = path.relative(root, filePath);
 
-            if (!lang || ignoredFiles.some((ignored) => filePath.includes(ignored))) {
+            if (!lang || ignoredFiles.some((ignored) => relativeFilePath.includes(ignored))) {
                 return;
             }
 
-            const relativePath = path.relative(root, filePath);
             const content = fs.readFileSync(filePath, 'utf-8');
-            currentDir = path.dirname(relativePath).split(path.sep)[0];
+            currentDir = path.dirname(relativeFilePath).split(path.sep)[0];
 
             if (currentDir !== lastDir) {
                 if (lastDir) {
@@ -116,12 +117,12 @@ function generateSummary(root, selectedDirs) {
                 lastDir = currentDir;
             }
 
-            console.log(`Processing: ${relativePath}`);
-            
+            console.log(`Processing: ${relativeFilePath}`);
+
             // Remove excessive empty lines from content
             const cleanedContent = removeExcessiveEmptyLines(content);
-            
-            summary += `${relativePath}:\n\`\`\`${lang}\n${cleanedContent}\n\`\`\`\n\n`;
+
+            summary += `${relativeFilePath}:\n\`\`\`${lang}\n${cleanedContent}\n\`\`\`\n\n`;
 
             processedFiles++;
             const progress = Math.round((processedFiles / totalFiles) * 100);
@@ -138,8 +139,9 @@ function generateSummary(root, selectedDirs) {
 
 // MAIN
 const rootDir = process.cwd();
-const selectedDirs = process.argv.slice(2);  // Command-line folders
+const selectedDirs = process.argv.slice(2);  // Accepts absolute or relative paths
 
 generateSummary(rootDir, selectedDirs);
 
-// node .\.angular\.temp\aaf5.js .\src\app\
+// relative path: node .\cs.js .\src\app
+// absolute path (pass path as string): node .\cs.js "D:\Kristam Projects\udw.india\udw.india.clientApp\ClientApp\src\app"
